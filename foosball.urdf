@@ -1,0 +1,314 @@
+<?xml version="1.0"?>
+<robot name="foosball_table_tuned_v2">
+
+  <!-- ========================================================== -->
+  <!-- 0. 材質定義 -->
+  <!-- ========================================================== -->
+  <material name="field_green"><color rgba="0.1 0.6 0.1 1.0"/></material>
+  <material name="wood_texture"><color rgba="0.65 0.45 0.25 1.0"/></material>
+  <material name="rod_metal"><color rgba="0.7 0.7 0.8 1.0"/></material>
+  <material name="team_a_red"><color rgba="0.9 0.1 0.1 1.0"/></material>
+  <material name="team_b_blue"><color rgba="0.1 0.1 0.9 1.0"/></material>
+  <material name="goal_sensor_mat"><color rgba="1 1 0 0.3"/></material>
+
+  <!-- ========================================================== -->
+  <!-- 1. 桌體結構 (Table Base) [MODIFIED: Extended for Goal Buffer] -->
+  <!-- ========================================================== -->
+  <link name="base_link">
+    <!-- 地板 (Static, Mass=0) [MODIFIED: Length increased to 1.5] -->
+    <visual>
+      <origin xyz="0 0 0"/>
+      <geometry><box size="1.5 0.68 0.02"/></geometry>
+      <material name="field_green"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0"/>
+      <geometry><box size="1.5 0.68 0.02"/></geometry>
+    </collision>
+
+    <!-- 長邊牆壁 (+Y) [MODIFIED: Length increased to 1.6] -->
+    <visual>
+      <origin xyz="0 0.365 0.075"/>
+      <geometry><box size="1.6 0.05 0.15"/></geometry>
+      <material name="wood_texture"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0.365 0.075"/>
+      <geometry><box size="1.6 0.05 0.15"/></geometry>
+    </collision>
+
+    <!-- 長邊牆壁 (-Y) [MODIFIED: Length increased to 1.6] -->
+    <visual>
+      <origin xyz="0 -0.365 0.075"/>
+      <geometry><box size="1.6 0.05 0.15"/></geometry>
+      <material name="wood_texture"/>
+    </visual>
+    <collision>
+      <origin xyz="0 -0.365 0.075"/>
+      <geometry><box size="1.6 0.05 0.15"/></geometry>
+    </collision>
+
+    <!-- 角落塊 (End Walls) [MODIFIED: Moved outward to +/- 0.775] -->
+    <!-- Front Right -->
+    <visual><origin xyz="0.775 0.22 0.075"/><geometry><box size="0.05 0.24 0.15"/></geometry><material name="wood_texture"/></visual>
+    <collision><origin xyz="0.775 0.22 0.075"/><geometry><box size="0.05 0.24 0.15"/></geometry></collision>
+    
+    <!-- Front Left -->
+    <visual><origin xyz="0.775 -0.22 0.075"/><geometry><box size="0.05 0.24 0.15"/></geometry><material name="wood_texture"/></visual>
+    <collision><origin xyz="0.775 -0.22 0.075"/><geometry><box size="0.05 0.24 0.15"/></geometry></collision>
+
+    <!-- Back Right -->
+    <visual><origin xyz="-0.775 0.22 0.075"/><geometry><box size="0.05 0.24 0.15"/></geometry><material name="wood_texture"/></visual>
+    <collision><origin xyz="-0.775 0.22 0.075"/><geometry><box size="0.05 0.24 0.15"/></geometry></collision>
+
+    <!-- Back Left -->
+    <visual><origin xyz="-0.775 -0.22 0.075"/><geometry><box size="0.05 0.24 0.15"/></geometry><material name="wood_texture"/></visual>
+    <collision><origin xyz="-0.775 -0.22 0.075"/><geometry><box size="0.05 0.24 0.15"/></geometry></collision>
+
+    <inertial>
+      <mass value="0"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+  </link>
+
+  <!-- ========================================================== -->
+  <!-- 2. 球門感測器 (Goal Sensors) [MODIFIED: Moved to +/- 0.75] -->
+  <!-- ========================================================== -->
+  <!-- Team A Goal (Left side) -->
+  <joint name="goal_sensor_A_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="goal_sensor_A_link"/>
+    <origin xyz="-0.75 0 0.05"/>
+  </joint>
+  <link name="goal_sensor_A_link">
+    <visual><geometry><box size="0.01 0.2 0.1"/></geometry><material name="goal_sensor_mat"/></visual>
+    <inertial><mass value="0.001"/><inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/></inertial>
+  </link>
+
+  <!-- Team B Goal (Right side) -->
+  <joint name="goal_sensor_B_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="goal_sensor_B_link"/>
+    <origin xyz="0.75 0 0.05"/>
+  </joint>
+  <link name="goal_sensor_B_link">
+    <visual><geometry><box size="0.01 0.2 0.1"/></geometry><material name="goal_sensor_mat"/></visual>
+    <inertial><mass value="0.001"/><inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/></inertial>
+  </link>
+
+  <!-- ========================================================== -->
+  <!-- 3. ROD MACROS & PLAYERS (UNCHANGED) -->
+  <!-- ========================================================== -->
+
+  <!-- Rod 1: Team A Goalie (-0.55) [3-Man Goalie] -->
+  <joint name="rod_1_slide" type="prismatic">
+    <parent link="base_link"/> <child link="rod_1_dummy"/>
+    <origin xyz="-0.625 0 0.15"/> <axis xyz="0 1 0"/>
+    <limit lower="-0.12" upper="0.12" effort="100" velocity="10"/>
+    <dynamics damping="0.5" friction="0.05"/>
+  </joint>
+  <link name="rod_1_dummy">
+    <inertial><mass value="0.01"/><inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/></inertial>
+  </link>
+  <joint name="rod_1_rotate" type="continuous">
+    <parent link="rod_1_dummy"/> <child link="rod_1_link"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.5" friction="0.05"/>
+  </joint>
+  <link name="rod_1_link">
+    <visual><origin rpy="1.5708 0 0"/><geometry><cylinder radius="0.008" length="1.1"/></geometry><material name="rod_metal"/></visual>
+    <collision><origin rpy="1.5708 0 0"/><geometry><cylinder radius="0.008" length="0.1"/></geometry></collision>
+    <inertial><mass value="0.5"/><origin rpy="1.5708 0 0"/><inertia ixx="0.05" ixy="0" ixz="0" iyy="0.00002" iyz="0" izz="0.05"/></inertial>
+  </link>
+  <!-- Players P1 (Center, Left +0.20, Right -0.20) -->
+  <joint name="p1_1_j" type="fixed"><parent link="rod_1_link"/><child link="p1_1"/><origin xyz="0 0 0"/></joint>
+  <link name="p1_1"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_a_red"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+  <joint name="p1_2_j" type="fixed"><parent link="rod_1_link"/><child link="p1_2"/><origin xyz="0 0.20 0"/></joint>
+  <link name="p1_2"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_a_red"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+  <joint name="p1_3_j" type="fixed"><parent link="rod_1_link"/><child link="p1_3"/><origin xyz="0 -0.20 0"/></joint>
+  <link name="p1_3"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_a_red"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+
+
+  <!-- Rod 2: Team A Defenders (-0.40) [Narrow Spacing] -->
+  <joint name="rod_2_slide" type="prismatic">
+    <parent link="base_link"/> <child link="rod_2_dummy"/>
+    <origin xyz="-0.45 0 0.15"/> <axis xyz="0 1 0"/>
+    <limit lower="-0.18" upper="0.18" effort="100" velocity="10"/>
+    <dynamics damping="0.5" friction="0.05"/>
+  </joint>
+  <link name="rod_2_dummy"><inertial><mass value="0.01"/><inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/></inertial></link>
+  <joint name="rod_2_rotate" type="continuous">
+    <parent link="rod_2_dummy"/> <child link="rod_2_link"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.5" friction="0.05"/>
+  </joint>
+  <link name="rod_2_link">
+    <visual><origin rpy="1.5708 0 0"/><geometry><cylinder radius="0.008" length="1.1"/></geometry><material name="rod_metal"/></visual>
+    <collision><origin rpy="1.5708 0 0"/><geometry><cylinder radius="0.008" length="0.1"/></geometry></collision>
+    <inertial><mass value="0.5"/><origin rpy="1.5708 0 0"/><inertia ixx="0.05" ixy="0" ixz="0" iyy="0.00002" iyz="0" izz="0.05"/></inertial>
+  </link>
+  <joint name="p2_1_j" type="fixed"><parent link="rod_2_link"/><child link="p2_1"/><origin xyz="0 0.14 0"/></joint>
+  <link name="p2_1"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_a_red"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+  <joint name="p2_2_j" type="fixed"><parent link="rod_2_link"/><child link="p2_2"/><origin xyz="0 -0.14 0"/></joint>
+  <link name="p2_2"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_a_red"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+
+
+  <!-- Rod 3: Team B Forwards (-0.25) [ORIGINAL] -->
+  <joint name="rod_3_slide" type="prismatic">
+    <parent link="base_link"/> <child link="rod_3_dummy"/>
+    <origin xyz="-0.275 0 0.15"/> <axis xyz="0 1 0"/>
+    <limit lower="-0.12" upper="0.12" effort="100" velocity="10"/>
+    <dynamics damping="0.5" friction="0.05"/>
+  </joint>
+  <link name="rod_3_dummy"><inertial><mass value="0.01"/><inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/></inertial></link>
+  <joint name="rod_3_rotate" type="continuous">
+    <parent link="rod_3_dummy"/> <child link="rod_3_link"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.5" friction="0.05"/>
+  </joint>
+  <link name="rod_3_link">
+    <visual><origin rpy="1.5708 0 0"/><geometry><cylinder radius="0.008" length="1.1"/></geometry><material name="rod_metal"/></visual>
+    <collision><origin rpy="1.5708 0 0"/><geometry><cylinder radius="0.008" length="0.1"/></geometry></collision>
+    <inertial><mass value="0.5"/><origin rpy="1.5708 0 0"/><inertia ixx="0.05" ixy="0" ixz="0" iyy="0.00002" iyz="0" izz="0.05"/></inertial>
+  </link>
+  <joint name="p3_1_j" type="fixed"><parent link="rod_3_link"/><child link="p3_1"/><origin xyz="0 0 0"/></joint>
+  <link name="p3_1"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_b_blue"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+  <joint name="p3_2_j" type="fixed"><parent link="rod_3_link"/><child link="p3_2"/><origin xyz="0 0.18 0"/></joint>
+  <link name="p3_2"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_b_blue"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+  <joint name="p3_3_j" type="fixed"><parent link="rod_3_link"/><child link="p3_3"/><origin xyz="0 -0.18 0"/></joint>
+  <link name="p3_3"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_b_blue"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+
+  <!-- Rod 4: Team A Midfield (-0.10) [ORIGINAL] -->
+  <joint name="rod_4_slide" type="prismatic">
+    <parent link="base_link"/> <child link="rod_4_dummy"/>
+    <origin xyz="-0.10 0 0.15"/> <axis xyz="0 1 0"/>
+    <limit lower="-0.08" upper="0.08" effort="100" velocity="10"/>
+    <dynamics damping="0.5" friction="0.05"/>
+  </joint>
+  <link name="rod_4_dummy"><inertial><mass value="0.01"/><inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/></inertial></link>
+  <joint name="rod_4_rotate" type="continuous">
+    <parent link="rod_4_dummy"/> <child link="rod_4_link"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.5" friction="0.05"/>
+  </joint>
+  <link name="rod_4_link">
+    <visual><origin rpy="1.5708 0 0"/><geometry><cylinder radius="0.008" length="1.1"/></geometry><material name="rod_metal"/></visual>
+    <collision><origin rpy="1.5708 0 0"/><geometry><cylinder radius="0.008" length="0.1"/></geometry></collision>
+    <inertial><mass value="0.5"/><origin rpy="1.5708 0 0"/><inertia ixx="0.05" ixy="0" ixz="0" iyy="0.00002" iyz="0" izz="0.05"/></inertial>
+  </link>
+  <joint name="p4_1_j" type="fixed"><parent link="rod_4_link"/><child link="p4_1"/><origin xyz="0 0 0"/></joint>
+  <link name="p4_1"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_a_red"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+  <joint name="p4_2_j" type="fixed"><parent link="rod_4_link"/><child link="p4_2"/><origin xyz="0 0.12 0"/></joint>
+  <link name="p4_2"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_a_red"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+  <joint name="p4_3_j" type="fixed"><parent link="rod_4_link"/><child link="p4_3"/><origin xyz="0 -0.12 0"/></joint>
+  <link name="p4_3"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_a_red"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+  <joint name="p4_4_j" type="fixed"><parent link="rod_4_link"/><child link="p4_4"/><origin xyz="0 0.24 0"/></joint>
+  <link name="p4_4"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_a_red"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+  <joint name="p4_5_j" type="fixed"><parent link="rod_4_link"/><child link="p4_5"/><origin xyz="0 -0.24 0"/></joint>
+  <link name="p4_5"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_a_red"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+
+  <!-- Rod 5: Team B Midfield (0.10) [ORIGINAL] -->
+  <joint name="rod_5_slide" type="prismatic">
+    <parent link="base_link"/> <child link="rod_5_dummy"/>
+    <origin xyz="0.10 0 0.15"/> <axis xyz="0 1 0"/>
+    <limit lower="-0.08" upper="0.08" effort="100" velocity="10"/>
+    <dynamics damping="0.5" friction="0.05"/>
+  </joint>
+  <link name="rod_5_dummy"><inertial><mass value="0.01"/><inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/></inertial></link>
+  <joint name="rod_5_rotate" type="continuous">
+    <parent link="rod_5_dummy"/> <child link="rod_5_link"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.5" friction="0.05"/>
+  </joint>
+  <link name="rod_5_link">
+    <visual><origin rpy="1.5708 0 0"/><geometry><cylinder radius="0.008" length="1.1"/></geometry><material name="rod_metal"/></visual>
+    <collision><origin rpy="1.5708 0 0"/><geometry><cylinder radius="0.008" length="0.1"/></geometry></collision>
+    <inertial><mass value="0.5"/><origin rpy="1.5708 0 0"/><inertia ixx="0.05" ixy="0" ixz="0" iyy="0.00002" iyz="0" izz="0.05"/></inertial>
+  </link>
+  <joint name="p5_1_j" type="fixed"><parent link="rod_5_link"/><child link="p5_1"/><origin xyz="0 0 0"/></joint>
+  <link name="p5_1"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_b_blue"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+  <joint name="p5_2_j" type="fixed"><parent link="rod_5_link"/><child link="p5_2"/><origin xyz="0 0.12 0"/></joint>
+  <link name="p5_2"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_b_blue"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+  <joint name="p5_3_j" type="fixed"><parent link="rod_5_link"/><child link="p5_3"/><origin xyz="0 -0.12 0"/></joint>
+  <link name="p5_3"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_b_blue"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+  <joint name="p5_4_j" type="fixed"><parent link="rod_5_link"/><child link="p5_4"/><origin xyz="0 0.24 0"/></joint>
+  <link name="p5_4"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_b_blue"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+  <joint name="p5_5_j" type="fixed"><parent link="rod_5_link"/><child link="p5_5"/><origin xyz="0 -0.24 0"/></joint>
+  <link name="p5_5"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_b_blue"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+
+  <!-- Rod 6: Team A Forwards (0.25) [ORIGINAL] -->
+  <joint name="rod_6_slide" type="prismatic">
+    <parent link="base_link"/> <child link="rod_6_dummy"/>
+    <origin xyz="0.275 0 0.15"/> <axis xyz="0 1 0"/>
+    <limit lower="-0.12" upper="0.12" effort="100" velocity="10"/>
+    <dynamics damping="0.5" friction="0.05"/>
+  </joint>
+  <link name="rod_6_dummy"><inertial><mass value="0.01"/><inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/></inertial></link>
+  <joint name="rod_6_rotate" type="continuous">
+    <parent link="rod_6_dummy"/> <child link="rod_6_link"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.5" friction="0.05"/>
+  </joint>
+  <link name="rod_6_link">
+    <visual><origin rpy="1.5708 0 0"/><geometry><cylinder radius="0.008" length="1.1"/></geometry><material name="rod_metal"/></visual>
+    <collision><origin rpy="1.5708 0 0"/><geometry><cylinder radius="0.008" length="0.1"/></geometry></collision>
+    <inertial><mass value="0.5"/><origin rpy="1.5708 0 0"/><inertia ixx="0.05" ixy="0" ixz="0" iyy="0.00002" iyz="0" izz="0.05"/></inertial>
+  </link>
+  <joint name="p6_1_j" type="fixed"><parent link="rod_6_link"/><child link="p6_1"/><origin xyz="0 0 0"/></joint>
+  <link name="p6_1"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_a_red"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+  <joint name="p6_2_j" type="fixed"><parent link="rod_6_link"/><child link="p6_2"/><origin xyz="0 0.18 0"/></joint>
+  <link name="p6_2"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_a_red"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+  <joint name="p6_3_j" type="fixed"><parent link="rod_6_link"/><child link="p6_3"/><origin xyz="0 -0.18 0"/></joint>
+  <link name="p6_3"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_a_red"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+
+  <!-- Rod 7: Team B Defenders (0.40) [Narrow Spacing] -->
+  <joint name="rod_7_slide" type="prismatic">
+    <parent link="base_link"/> <child link="rod_7_dummy"/>
+    <origin xyz="0.45 0 0.15"/> <axis xyz="0 1 0"/>
+    <limit lower="-0.18" upper="0.18" effort="100" velocity="10"/>
+    <dynamics damping="0.5" friction="0.05"/>
+  </joint>
+  <link name="rod_7_dummy"><inertial><mass value="0.01"/><inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/></inertial></link>
+  <joint name="rod_7_rotate" type="continuous">
+    <parent link="rod_7_dummy"/> <child link="rod_7_link"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.5" friction="0.05"/>
+  </joint>
+  <link name="rod_7_link">
+    <visual><origin rpy="1.5708 0 0"/><geometry><cylinder radius="0.008" length="1.1"/></geometry><material name="rod_metal"/></visual>
+    <collision><origin rpy="1.5708 0 0"/><geometry><cylinder radius="0.008" length="0.1"/></geometry></collision>
+    <inertial><mass value="0.5"/><origin rpy="1.5708 0 0"/><inertia ixx="0.05" ixy="0" ixz="0" iyy="0.00002" iyz="0" izz="0.05"/></inertial>
+  </link>
+  <!-- Players P7 (Narrowed to +/- 0.14) -->
+  <joint name="p7_1_j" type="fixed"><parent link="rod_7_link"/><child link="p7_1"/><origin xyz="0 0.14 0"/></joint>
+  <link name="p7_1"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_b_blue"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+  <joint name="p7_2_j" type="fixed"><parent link="rod_7_link"/><child link="p7_2"/><origin xyz="0 -0.14 0"/></joint>
+  <link name="p7_2"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_b_blue"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+
+  <!-- Rod 8: Team B Goalie (0.55) [3-Man Goalie] -->
+  <joint name="rod_8_slide" type="prismatic">
+    <parent link="base_link"/> <child link="rod_8_dummy"/>
+    <origin xyz="0.625 0 0.15"/> <axis xyz="0 1 0"/>
+    <limit lower="-0.12" upper="0.12" effort="100" velocity="10"/>
+    <dynamics damping="0.5" friction="0.05"/>
+  </joint>
+  <link name="rod_8_dummy"><inertial><mass value="0.01"/><inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/></inertial></link>
+  <joint name="rod_8_rotate" type="continuous">
+    <parent link="rod_8_dummy"/> <child link="rod_8_link"/>
+    <axis xyz="0 1 0"/>
+    <dynamics damping="0.5" friction="0.05"/>
+  </joint>
+  <link name="rod_8_link">
+    <visual><origin rpy="1.5708 0 0"/><geometry><cylinder radius="0.008" length="1.1"/></geometry><material name="rod_metal"/></visual>
+    <collision><origin rpy="1.5708 0 0"/><geometry><cylinder radius="0.008" length="0.1"/></geometry></collision>
+    <inertial><mass value="0.5"/><origin rpy="1.5708 0 0"/><inertia ixx="0.05" ixy="0" ixz="0" iyy="0.00002" iyz="0" izz="0.05"/></inertial>
+  </link>
+  <!-- Players P8 (Center, Left +0.20, Right -0.20) -->
+  <joint name="p8_1_j" type="fixed"><parent link="rod_8_link"/><child link="p8_1"/><origin xyz="0 0 0"/></joint>
+  <link name="p8_1"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_b_blue"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+  <joint name="p8_2_j" type="fixed"><parent link="rod_8_link"/><child link="p8_2"/><origin xyz="0 0.20 0"/></joint>
+  <link name="p8_2"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_b_blue"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+  <joint name="p8_3_j" type="fixed"><parent link="rod_8_link"/><child link="p8_3"/><origin xyz="0 -0.20 0"/></joint>
+  <link name="p8_3"><visual><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry><material name="team_b_blue"/></visual><collision><origin xyz="0 0 -0.07"/><geometry><cylinder radius="0.015" length="0.13"/></geometry></collision><inertial><mass value="0.1"/><origin xyz="0 0 -0.07"/><inertia ixx="0.00015" ixy="0" ixz="0" iyy="0.00015" iyz="0" izz="0.00002"/></inertial></link>
+
+</robot>
